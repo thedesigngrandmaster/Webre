@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webre - Premium Crypto & Forex Trading Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            secondary: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            },
+            dark: {
+              800: '#1e293b',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .animate-float {
+        animation: float 3s ease-in-out infinite;
+      }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+      }
+      .animate-pulse-slow {
+        animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      .animate-typing {
+        overflow: hidden;
+        border-right: 2px solid;
+        white-space: nowrap;
+        animation: typing 3s steps(30, end), blink-caret 0.75s step-end infinite;
+      }
+      @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+      }
+      @keyframes blink-caret {
+        from, to { border-color: transparent }
+        50% { border-color: #0ea5e9 }
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-dark-900 text-white min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="px-4 lg:px-6 h-16 flex items-center border-b border-gray-800 bg-dark-900 fixed w-full z-50">
+    <div class="flex items-center justify-center">
+      <span class="font-bold text-2xl bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
+        Webre
+      </span>
+    </div>
+    <nav class="ml-8 hidden md:flex gap-6">
+      <button class="text-sm font-medium hover:text-primary-400 transition-colors" data-tab="dashboard">Dashboard</button>
+      <button class="text-sm font-medium hover:text-primary-400 transition-colors" data-tab="markets">Markets</button>
+      <button class="text-sm font-medium hover:text-primary-400 transition-colors" data-tab="trading">Trading</button>
+      <button class="text-sm font-medium hover:text-primary-400 transition-colors" data-tab="portfolio">Portfolio</button>
+    </nav>
+    <div class="ml-auto flex items-center gap-4">
+      <button id="user-menu-button" class="hidden text-sm font-medium text-primary-500 hover:text-primary-400 transition-colors">
+        <span id="username">User</span>
+      </button>
+      <button id="login-button" class="text-sm font-medium text-primary-500 hover:text-primary-400 transition-colors">
+        Sign In
+      </button>
+      <button id="signup-button" class="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 px-4 py-2 rounded-md text-sm font-medium">
+        Get Started
+      </button>
+      <button id="logout-button" class="hidden text-sm font-medium text-red-500 hover:text-red-400 transition-colors">
+        Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 pt-16">
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-dark-800 rounded-lg p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+          <h2 id="auth-title" class="text-xl font-bold">Sign In</h2>
+          <button id="close-auth" class="text-gray-400 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <form id="auth-form" class="space-y-4">
+          <div id="name-field" class="hidden">
+            <label for="name" class="block text-sm font-medium text-gray-400">Name</label>
+            <input type="text" id="name" class="mt-1 block w-full px-3 py-2 bg-dark-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-400">Email</label>
+            <input type="email" id="email" class="mt-1 block w-full px-3 py-2 bg-dark-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-400">Password</label>
+            <input type="password" id="password" class="mt-1 block w-full px-3 py-2 bg-dark-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+          </div>
+          <button type="submit" id="auth-submit" class="w-full bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 px-4 py-2 rounded-md text-sm font-medium">
+            Sign In
+          </button>
+        </form>
+        <div class="mt-4 text-center text-sm">
+          <span class="text-gray-400" id="auth-switch-text">Don't have an account?</span>
+          <button id="auth-switch" class="ml-1 text-primary-500 hover:text-primary-400">Sign Up</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Welcome Screen (Before Login) -->
+    <div id="welcome-screen" class="py-0">
+      <!-- Hero Section with Animated Trading Interface -->
+      <section class="py-20 md:py-28 bg-gradient-to-b from-dark-900 to-dark-800 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+              <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+                Trade Smarter with Webre's $100K Platform
+              </h1>
+              <p class="text-xl text-gray-400 max-w-xl">
+                Advanced crypto and forex trading solutions with institutional-grade security and lightning-fast execution.
+              </p>
+              <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <button id="hero-signup-button" class="px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 rounded-md font-medium text-lg">
+                  Start Trading
+                </button>
+                <button class="px-6 py-3 bg-transparent border border-gray-700 hover:bg-gray-800 rounded-md font-medium text-lg">
+                  View Demo
+                </button>
+              </div>
+              <div class="flex items-center gap-6 pt-2">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span class="text-gray-400">Bank-Level Security</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span class="text-gray-400">Lightning Fast</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-gray-400">Global Markets</span>
+                </div>
+              </div>
+            </div>
+            <div class="relative">
+              <!-- Animated Trading Interface Mockup -->
+              <div class="relative w-full h-[400px] bg-gradient-to-r from-primary-500/10 to-secondary-500/10 rounded-xl overflow-hidden shadow-2xl animate-float">
+                <div class="absolute inset-0 bg-dark-900/80 backdrop-blur-sm"></div>
+                
+                <!-- Trading Interface Header -->
+                <div class="absolute top-0 left-0 right-0 h-12 bg-dark-800 border-b border-gray-700 flex items-center px-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                  <div class="mx-auto font-medium">BTC/USD Trading View</div>
+                </div>
+                
+                <!-- Trading Chart Animation -->
+                <div class="absolute top-14 left-4 right-4 h-[200px]">
+                  <div class="h-full w-full relative">
+                    <div class="absolute bottom-0 left-0 right-0 h-[180px] bg-gradient-to-t from-primary-500/20 to-transparent"></div>
+                    <svg class="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
+                      <path id="chart-path" d="M0,150 C20,140 40,160 60,130 C80,100 100,120 120,90 C140,60 160,80 180,50 C200,20 220,40 240,30 C260,20 280,40 300,30 C320,20 340,40 360,30 C380,20 400,10 400,10" stroke="#0ea5e9" stroke-width="2" fill="none" class="animate-pulse-slow"></path>
+                    </svg>
+                  </div>
+                </div>
+                
+                <!-- Trading Interface Controls -->
+                <div class="absolute bottom-4 left-4 right-4 bg-dark-800/90 backdrop-blur-sm rounded-lg border border-gray-700 p-4">
+                  <div class="flex justify-between items-center mb-3">
+                    <div class="text-primary-500 font-bold">BTC/USD</div>
+                    <div class="text-green-500">+2.45%</div>
+                  </div>
+                  <div class="flex justify-between items-center mb-3">
+                    <div class="text-gray-400">Current Price</div>
+                    <div class="font-bold" id="animated-price">$65,432.10</div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <button class="bg-green-600 hover:bg-green-700 py-2 rounded-md font-medium">Buy</button>
+                    <button class="bg-red-600 hover:bg-red-700 py-2 rounded-md font-medium">Sell</button>
+                  </div>
+                </div>
+                
+                <!-- Animated Blinking Cursor -->
+                <div class="absolute top-[120px] right-[80px] w-4 h-4 bg-primary-500 rounded-full opacity-0" id="cursor-blink"></div>
+              </div>
+              
+              <!-- Decorative Elements -->
+              <div class="absolute -top-6 -right-6 w-24 h-24 bg-primary-500/20 rounded-full blur-xl"></div>
+              <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary-500/20 rounded-full blur-xl"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature Highlights Section -->
+      <section class="py-20 bg-dark-900 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Professional Trading Tools</h2>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+              Our $100K platform delivers institutional-grade tools with unmatched performance
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1 -->
+            <div class="bg-dark-800 border border-gray-800 rounded-lg p-6 hover:border-primary-500/50 transition-colors">
+              <div class="text-primary-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Advanced Charting</h3>
+              <p class="text-gray-400 mb-4">
+                Professional-grade charting with over 100+ technical indicators, drawing tools, and multi-timeframe analysis.
+              </p>
+              <a href="#" class="text-primary-500 hover:text-primary-400 inline-flex items-center">
+                Learn more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="bg-dark-800 border border-gray-800 rounded-lg p-6 hover:border-primary-500/50 transition-colors">
+              <div class="text-primary-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Algorithmic Trading</h3>
+              <p class="text-gray-400 mb-4">
+                Create, backtest, and deploy custom trading strategies with our intuitive algorithm builder and API access.
+              </p>
+              <a href="#" class="text-primary-500 hover:text-primary-400 inline-flex items-center">
+                Learn more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="bg-dark-800 border border-gray-800 rounded-lg p-6 hover:border-primary-500/50 transition-colors">
+              <div class="text-primary-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Real-Time Execution</h3>
+              <p class="text-gray-400 mb-4">
+                Lightning-fast order execution with sub-millisecond latency and advanced order types for any market condition.
+              </p>
+              <a href="#" class="text-primary-500 hover:text-primary-400 inline-flex items-center">
+                Learn more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="bg-dark-800 border border-gray-800 rounded-lg p-6 hover:border-primary-500/50 transition-colors">
+              <div class="text-primary-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Global Market Access</h3>
+              <p class="text-gray-400 mb-4">
+                Trade across multiple asset classes including crypto, forex, stocks, and commodities from a single account.
+              </p>
+              <a href="#" class="text-primary-500 hover:text-primary-400 inline-flex items-center">
+                Learn more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="bg-dark-800 border border-gray-800 rounded-lg p-6 hover:border-primary-500/50 transition-colors">
+              <div class="text-primary-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Enterprise Security</h3>
+              <p class="text-gray-400 mb-4">
+                Bank-level security with cold storage, two-factor authentication, and advanced encryption protocols.
+              </p>
+              <a href="#" class="text-primary-500 hover:text-primary-400 inline-flex items-center">
+                Learn more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="bg-dark-800 border border-gray-800 rounded-lg p-6 hover:border-primary-500/50 transition-colors">
+              <div class="text-primary-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2">24/7 Expert Support</h3>
+              <p class="text-gray-400 mb-4">
+                Dedicated account managers and 24/7 support from experienced traders and technical specialists.
+              </p>
+              <a href="#" class="text-primary-500 hover:text-primary-400 inline-flex items-center">
+                Learn more
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pricing Section -->
+      <section class="py-20 bg-dark-800 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Premium Trading Plans</h2>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+              Choose the plan that matches your trading ambitions and scale as you grow
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Starter Plan -->
+            <div class="bg-dark-900 border border-gray-800 rounded-lg overflow-hidden">
+              <div class="p-6">
+                <h3 class="text-2xl font-bold mb-2">Starter</h3>
+                <div class="flex items-baseline mb-4">
+                  <span class="text-4xl font-bold">$99</span>
+                  <span class="text-gray-400 ml-1">/month</span>
+                </div>
+                <p class="text-gray-400 mb-6">For new traders entering the market</p>
+                
+                <ul class="space-y-3 mb-6">
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Basic charting tools</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>5 simultaneous trades</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Standard execution speed</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Email support</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Market data for major pairs</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="px-6 pb-6">
+                <button class="w-full py-3 bg-dark-800 hover:bg-dark-700 border border-gray-700 rounded-md font-medium">
+                  Get Started
+                </button>
+              </div>
+            </div>
+            
+            <!-- Professional Plan (Featured) -->
+            <div class="bg-gradient-to-b from-primary-900/40 to-dark-900 border border-primary-700 rounded-lg overflow-hidden shadow-lg transform md:scale-105 z-10">
+              <div class="bg-primary-600 text-center py-2">
+                <span class="font-medium">MOST POPULAR</span>
+              </div>
+              <div class="p-6">
+                <h3 class="text-2xl font-bold mb-2">Professional</h3>
+                <div class="flex items-baseline mb-4">
+                  <span class="text-4xl font-bold">$299</span>
+                  <span class="text-gray-400 ml-1">/month</span>
+                </div>
+                <p class="text-gray-400 mb-6">For serious traders and investors</p>
+                
+                <ul class="space-y-3 mb-6">
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Advanced charting & indicators</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Unlimited simultaneous trades</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Priority execution speed</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>24/7 priority support</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>API access</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Full market data access</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="px-6 pb-6">
+                <button class="w-full py-3 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 rounded-md font-medium">
+                  Get Started
+                </button>
+              </div>
+            </div>
+            
+            <!-- Enterprise Plan -->
+            <div class="bg-dark-900 border border-gray-800 rounded-lg overflow-hidden">
+              <div class="p-6">
+                <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+                <div class="flex items-baseline mb-4">
+                  <span class="text-4xl font-bold">$999</span>
+                  <span class="text-gray-400 ml-1">/month</span>
+                </div>
+                <p class="text-gray-400 mb-6">For institutional traders and funds</p>
+                
+                <ul class="space-y-3 mb-6">
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Institutional-grade tools</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Ultra-low latency execution</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Custom integrations</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Dedicated account manager</span>
+                  </li>
+                  <li class="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>White-glove onboarding</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="px-6 pb-6">
+                <button class="w-full py-3 bg-dark-800 hover:bg-dark-700 border border-gray-700 rounded-md font-medium">
+                  Contact Sales
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Call to Action Section -->
+      <section class="py-20 bg-dark-900">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Experience Premium Trading?</h2>
+          <p class="text-xl text-gray-400 mb-8 max-w-3xl mx-auto">
+            Join thousands of professional traders who have elevated their trading with Webre's $100K platform
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button id="cta-signup-button" class="px-8 py-4 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 rounded-md font-medium text-lg">
+              Start Trading Now
+            </button>
+            <button class="px-8 py-4 bg-transparent border border-gray-700 hover:bg-gray-800 rounded-md font-medium text-lg">
+              Schedule a Demo
+            </button>
+          </div>
+          <div class="mt-12 flex flex-col md:flex-row items-center justify-center gap-8">
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>No credit card required</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>14-day free trial</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Cancel anytime</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Original Features Section (Keeping for reference) -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden">
+        <div class="text-center mb-12">
+          <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            Trade Smarter with Webre's Premium Platform
+          </h1>
+          <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+            Advanced crypto and forex trading solutions with institutional-grade security and lightning-fast execution.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="bg-dark-800 border border-gray-800 rounded-lg p-6">
+            <div class="text-primary-500 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Advanced Trading Tools</h3>
+            <p class="text-gray-400">Professional-grade charting, indicators, and analysis tools for serious traders.</p>
+          </div>
+          <div class="bg-dark-800 border border-gray-800 rounded-lg p-6">
+            <div class="text-primary-500 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Multi-Market Access</h3>
+            <p class="text-gray-400">Trade crypto, forex, stocks, and commodities all from a single unified platform.</p>
+          </div>
+          <div class="bg-dark-800 border border-gray-800 rounded-lg p-6">
+            <div class="text-primary-500 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Enterprise-Grade Security</h3>
+            <p class="text-gray-400">Multi-layer protection for your assets with cold storage and advanced encryption.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard (After Login) -->
+    <div id="dashboard-screen" class="hidden">
+      <!-- Dashboard Layout -->
+      <div class="grid grid-cols-12 gap-4 p-4">
+        <!-- Market Overview -->
+        <div class="col-span-12 lg:col-span-8 bg-dark-800 rounded-lg p-4 border border-gray-800">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">Market Overview</h2>
+            <div class="flex space-x-2">
+              <button class="px-3 py-1 text-sm bg-dark-900 rounded-md hover:bg-gray-700 market-timeframe active" data-timeframe="1d">1D</button>
+              <button class="px-3 py-1 text-sm bg-dark-900 rounded-md hover:bg-gray-700 market-timeframe" data-timeframe="1w">1W</button>
+              <button class="px-3 py-1 text-sm bg-dark-900 rounded-md hover:bg-gray-700 market-timeframe" data-timeframe="1m">1M</button>
+              <button class="px-3 py-1 text-sm bg-dark-900 rounded-md hover:bg-gray-700 market-timeframe" data-timeframe="1y">1Y</button>
+            </div>
+          </div>
+          <div class="h-80">
+            <canvas id="market-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Watchlist -->
+        <div class="col-span-12 lg:col-span-4 bg-dark-800 rounded-lg p-4 border border-gray-800">
+          <h2 class="text-xl font-bold mb-4">Watchlist</h2>
+          <div class="space-y-4" id="watchlist">
+            <!-- Watchlist items will be populated by JS -->
+          </div>
+        </div>
+
+        <!-- Trading Interface -->
+        <div class="col-span-12 lg:col-span-8 bg-dark-800 rounded-lg p-4 border border-gray-800">
+          <h2 class="text-xl font-bold mb-4">Trading</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-1">Select Asset</label>
+                <select id="trading-asset" class="w-full px-3 py-2 bg-dark-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                  <option value="BTC/USD">BTC/USD</option>
+                  <option value="ETH/USD">ETH/USD</option>
+                  <option value="XRP/USD">XRP/USD</option>
+                  <option value="SOL/USD">SOL/USD</option>
+                  <option value="EUR/USD">EUR/USD</option>
+                  <option value="GBP/USD">GBP/USD</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-1">Amount</label>
+                <input type="number" id="trading-amount" class="w-full px-3 py-2 bg-dark-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="0.00">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-1">Type</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button id="market-order" class="px-4 py-2 bg-dark-900 border border-gray-700 rounded-md text-white hover:bg-gray-800 active">Market</button>
+                  <button id="limit-order" class="px-4 py-2 bg-dark-900 border border-gray-700 rounded-md text-white hover:bg-gray-800">Limit</button>
+                </div>
+              </div>
+              <div id="limit-price-container" class="hidden">
+                <label class="block text-sm font-medium text-gray-400 mb-1">Limit Price</label>
+                <input type="number" id="limit-price" class="w-full px-3 py-2 bg-dark-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="0.00">
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-1">Current Price</label>
+                <div id="current-price" class="text-2xl font-bold">$0.00</div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-400 mb-1">24h Change</label>
+                <div id="price-change" class="text-lg font-medium">0.00%</div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 mt-8">
+                <button id="buy-button" class="px-4 py-3 bg-green-600 hover:bg-green-700 rounded-md font-medium">Buy</button>
+                <button id="sell-button" class="px-4 py-3 bg-red-600 hover:bg-red-700 rounded-md font-medium">Sell</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Trades -->
+        <div class="col-span-12 lg:col-span-4 bg-dark-800 rounded-lg p-4 border border-gray-800">
+          <h2 class="text-xl font-bold mb-4">Recent Trades</h2>
+          <div class="space-y-3" id="recent-trades">
+            <!-- Recent trades will be populated by JS -->
+          </div>
+        </div>
+
+        <!-- Market Data -->
+        <div class="col-span-12 bg-dark-800 rounded-lg p-4 border border-gray-800">
+          <h2 class="text-xl font-bold mb-4">Market Data</h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-700">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Asset</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Price</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">24h Change</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">24h Volume</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Market Cap</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-700" id="market-data">
+                <!-- Market data will be populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-800 bg-dark-900 py-12 px-4">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+        <div class="col-span-2 md:col-span-1">
+          <div class="flex items-center mb-6">
+            <span class="font-bold text-2xl bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">
+              Webre
+            </span>
+          </div>
+          <p class="text-gray-400 mb-4">
+            Advanced trading solutions for crypto and forex markets with institutional-grade security.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-1.6 3.358-1.765 4.5-.762 2.2 1.931 1.73 4.012 1.73 4.012v5.985z"/>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium mb-4">Platform</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white">Markets</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Trading</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Pricing</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">API</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Mobile App</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium mb-4">Company</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white">About</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Press</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Partners</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium mb-4">Resources</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white">Documentation</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Help Center</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Community</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Status</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Webinars</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium mb-4">Legal</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white">Privacy</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Terms</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Security</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Compliance</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white">Cookies</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-400 text-sm">© 2025 Webre. All rights reserved.</p>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <a href="#" class="text-gray-400 hover:text-white text-sm">Privacy Policy</a>
+          <a href="#" class="text-gray-400 hover:text-white text-sm">Terms of Service</a>
+          <a href="#" class="text-gray-400 hover:text-white text-sm">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="/js/index.js"></script>
+</body>
+</html>
